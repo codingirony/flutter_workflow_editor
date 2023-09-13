@@ -84,12 +84,14 @@ class _WorkflowGraphState extends State<WorkflowGraph> {
               constrained: false,
               child: GestureDetector(
                   onDoubleTap: () {
-                    widget.onBackgroundDoubleTap(getPosition());
+                    setState(() {
+                      _selected = null;
+                      widget.onBackgroundDoubleTap(getPosition()); // create node
+                    });
                   },
                   onTap: () {
                     setState(() {
                       _selected = null;
-                      widget.changeSelection(_selected); // remove selection
                     });
                   },
                   child: Stack(children: [
@@ -102,8 +104,6 @@ class _WorkflowGraphState extends State<WorkflowGraph> {
                         child: CustomPaint(
                             size: const Size(letterWidth + 6, letterHeight + 6), painter: BacgroundPaint())),
                     for (final node in nodes.values)
-                      for (final id in node.next) NodeLineBox(fromNode: node, toNode: nodes[id]!),
-                    for (final node in nodes.values)
                       Positioned(
                           top: topPos(node),
                           left: leftPos(node),
@@ -111,11 +111,13 @@ class _WorkflowGraphState extends State<WorkflowGraph> {
                               onTap: () {
                                 setState(() {
                                   selectNode(node.id);
-                                  widget.changeSelection(_selected);
+                                  widget.changeSelection(_selected); // update selection
                                 });
                               },
                               onDoubleTap: () {
-                                widget.onNodeDoubleTap(node);
+                                setState(() {
+                                  widget.onNodeDoubleTap(node); // notify selection
+                                });
                               },
                               child: Draggable(
                                 data: node,
@@ -127,6 +129,8 @@ class _WorkflowGraphState extends State<WorkflowGraph> {
                                   });
                                 },
                               ))),
+                    for (final node in nodes.values)
+                      for (final id in node.next) NodeLineBox(fromNode: node, toNode: nodes[id]!),
                   ]))),
         ));
   }
